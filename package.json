@@ -1,0 +1,22 @@
+{
+  "name": "rakim-spriggs-portfolio",
+  "version": "1.0.0",
+  "description": "Resume and portfolio website for Rakim Spriggs",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js"
+  },
+  "keywords": [],
+  "author": "Rakim Spriggs",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "hbs": "^4.2.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  }
+}
