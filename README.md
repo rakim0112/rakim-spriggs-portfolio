@@ -1,209 +1,102 @@
-# Rakim Spriggs Portfolio Website
+# Rakim Spriggs — Software Development Portfolio
 
-A full-stack portfolio website built using Node.js, Express, Handlebars, HTML, CSS, and JavaScript. This project serves as a professional portfolio showcasing my software development, computational graphics, photography, and music production experience.
+**B.S. Computer Science | Full-Stack Development | Cloud & Application Development**  
+Southern New Hampshire University — **Expected December 2026**
 
----
+I build web applications, APIs, database-backed tools, cloud-based applications, and interactive software. My current work combines full-stack development with AWS, Docker, MongoDB, Python, JavaScript/TypeScript, Java, and C++.
 
-## About Me
+## What I Work With
 
-My name is Rakim Spriggs, and I am currently pursuing a Bachelor of Science in Computer Science at Southern New Hampshire University.
+**Languages**
+- Python
+- Java
+- C++
+- JavaScript
+- TypeScript
+- HTML/CSS
 
-I have experience in:
+**Web & Backend**
+- Angular
+- Node.js
+- Express
+- REST APIs
+- Handlebars
+- MongoDB
+- Mongoose
+- JWT authentication
 
-* Full Stack Web Development
-* REST API Development
-* MongoDB Databases
-* Angular Applications
-* OpenGL Graphics Programming
-* Photography & Creative Media
-* Music Production
+**Cloud & Development**
+- Amazon Web Services (AWS)
+- Amazon S3
+- AWS Lambda
+- Docker
+- Docker Compose
+- Git/GitHub
 
----
+**Graphics**
+- OpenGL
+- GLSL
+- 3D scene development
 
 ## Featured Projects
 
-### Travlr Full Stack Application
+### Travlr Getaways — Full-Stack Application
+**Angular · Node.js · Express · MongoDB · REST · JWT**
 
-A travel booking application developed using:
+A full-stack travel application with an Angular administration interface, Node.js/Express API, MongoDB data layer, CRUD operations, and authenticated administrative functionality.
 
-* Node.js
-* Express
-* Angular
-* MongoDB
-* REST APIs
-* JWT Authentication
+[View the project on GitHub](https://github.com/rakim0112/CS465-Fullstack)
 
-Features include trip management, CRUD operations, and an administrative dashboard.
+### Cloud-Based Full-Stack Application
+**Angular · TypeScript · Docker · Docker Compose · AWS S3 · AWS Lambda**
 
----
+Extended a full-stack application toward a cloud deployment model. Work includes containerization, Docker Compose orchestration, production builds, AWS S3 hosting preparation, Lambda/serverless integration, CORS configuration, and troubleshooting across local and cloud environments.
+
+[View the project on GitHub](https://github.com/rakim0112/CS-470-10193-M01-Full-Stack-Development-II-2026-C-4-Ju)
+
+### Grazioso Salvare — Data Dashboard
+**Python · MongoDB · CRUD · Data Filtering · Visualization**
+
+Built a database-driven dashboard around MongoDB data. The project separates database operations from the interface through a reusable CRUD module and provides filtering and visualization functionality.
+
+[View the project on GitHub](https://github.com/rakim0112/CS340)
 
 ### 3D Music Production Workstation
+**C++ · OpenGL · GLSL**
 
-A computational graphics project developed in:
+Created an interactive 3D environment representing a music production workstation. The project uses custom scene objects, textures, materials, lighting, and camera controls to build and navigate the environment.
 
-* C++
-* OpenGL
-* GLSL
+[View the project on GitHub](https://github.com/rakim0112/-CS-330)
 
-Features include:
+### Healthcare Dashboard
+**Frontend Development · JavaScript · Data Visualization**
 
-* Custom 3D models
-* Textures
-* Materials
-* Dynamic lighting
-* Camera controls
+A frontend dashboard project developed from a provided design challenge. The project focuses on translating a visual interface into a functional, organized web experience.
 
-Inspired by professional MIDI drum pad controllers and music production equipment.
+[View the project on GitHub](https://github.com/rakim0112/coalition-healthcare-dashboard)
 
----
+## Professional Focus
 
-### Animal Shelter Dashboard
+I am currently preparing for software and technology roles where I can contribute to application development, cloud systems, technical support, and continued software engineering growth.
 
-Database-driven dashboard project utilizing:
+My background also includes photography and music production. Those experiences have shaped how I approach visual design, organization, collaboration, and creative problem solving, while my primary professional focus is computer science and software development.
 
-* MongoDB
-* Python
-* CRUD Operations
-* Data Filtering
-* Analytics
+## Education
 
----
+**Southern New Hampshire University**  
+Bachelor of Science in Computer Science  
+Expected December 2026
 
-## Photography & Media
+## Links
 
-In addition to software development, I have experience in:
-
-* Event Photography
-* Artist Branding
-* Creative Direction
-* Digital Media Production
-
-Portfolio images throughout the website showcase photography and creative work from various projects.
-
----
-
-## Music Production
-
-Producer Name: **RAK47**
-
-Founder of **47 Records**
-
-Experience includes:
-
-* Music Production
-* Recording
-* Mixing
-* Artist Development
-* Creative Media
-
----
-
-## Technologies Used
-
-### Front End
-
-* HTML5
-* CSS3
-* JavaScript
-* Handlebars
-
-### Back End
-
-* Node.js
-* Express.js
-
-### Databases
-
-* MongoDB
-* Mongoose
-
-### Development Tools
-
-* Git
-* GitHub
-* VS Code
-
-### Graphics
-
-* OpenGL
-* C++
-* GLSL
-
----
-
-## Installation
-
-Clone the repository:
-
-```bash
-git clone https://github.com/rakim0112/rakim-spriggs-portfolio.git
-```
-
-Navigate to the project folder:
-
-```bash
-cd rakim-spriggs-portfolio
-```
-
-Install dependencies:
-
-```bash
-npm install
-```
-
-Start the application:
-
-```bash
-npm start
-```
-
-Open:
-
-```text
-http://localhost:3000
-```
-
----
-
-## API Endpoint
-
-Profile API:
-
-```text
-http://localhost:3000/api/profile
-```
-
-Returns portfolio information in JSON format.
-
----
-
-## GitHub
-
-GitHub Profile:
-
-https://github.com/rakim0112
-
----
+- GitHub: https://github.com/rakim0112
+- Portfolio: https://github.com/rakim0112/rakim-spriggs-portfolio
 
 ## Contact
 
-Email:
-
-[rakimspriggs@gmail.com](mailto:rakimspriggs@gmail.com)
-
----
-
-## Future Enhancements
-
-* Resume Download
-* Contact Form
-* MongoDB Integration
-* Admin Dashboard
-* Project Filtering
-* Music Portfolio Integration
-* Photography Gallery
-* Live Deployment
+**Rakim Spriggs**  
+Email: rakimspriggs@gmail.com
 
 ---
 
-© 2026 Rakim Spriggs. All Rights Reserved.
+This portfolio is actively maintained as I complete the final portion of my Computer Science degree. Additional projects from my remaining coursework will be added as they are completed and polished for public presentation.
