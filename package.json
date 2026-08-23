@@ -1,13 +1,22 @@
 {
   "name": "rakim-spriggs-portfolio",
   "version": "1.0.0",
-  "description": "Resume and portfolio website for Rakim Spriggs",
+  "description": "Professional software development portfolio for Rakim Spriggs",
   "main": "app.js",
   "scripts": {
     "start": "node app.js",
     "dev": "nodemon app.js"
   },
-  "keywords": [],
+  "keywords": [
+    "portfolio",
+    "computer-science",
+    "full-stack-development",
+    "node.js",
+    "express",
+    "mongodb",
+    "angular",
+    "aws"
+  ],
   "author": "Rakim Spriggs",
   "license": "ISC",
   "type": "commonjs",
