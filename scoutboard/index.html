@@ -56,7 +56,7 @@ async function eventHit(name){
  finally{savingEvent=false;document.querySelectorAll('#quickPad button').forEach(b=>b.disabled=false)}
 }
 async function undoStat(k){if(!requireContext())return;const old=getStat();if(!old)return;const c={...old.counters};c[k]=Math.max(0,(Number(c[k])||0)-1);try{await request('undo',sb.from('game_stats').update({counters:c,updated_at:new Date().toISOString()}).eq('id',old.id).eq('scout_id',user.id).select().single());await refresh()}catch(e){notify(e.message,true)}}
-async function saveEval(){if(!requireContext())return;const old=getEval();const grades={};document.querySelectorAll('.gradeInput').forEach(x=>{if(x.value)grades[x.dataset.grade]=Number(x.value)});const row={org_id:org.id,game_id:game,player_id:selected,scout_id:user.id,grades,updated_at:new Date().toISOString()};['projection','confidence','strengths','development','overall'].forEach(k=>row[k]=$(k).value);try{await request('evaluation',old?sb.from('evaluations').update(row).eq('id',old.id).eq('scout_id',user.id).select().single():sb.from('evaluations').insert(row).select().single());await refresh()}catch(e){notify(e.message,true)}}
+async function saveEval(){if(!requireContext())return;const old=getEval();const grades={};document.querySelectorAll('.gradeInput').forEach(x=>{if(x.value)grades[x.dataset.grade]=Number(x.value)});const row={org_id:org.id,game_id:game,player_id:selected,scout_id:user.id,grades,updated_at:new Date().toISOString()};['projection','confidence','strengths','development','overall'].forEach(k=>row[k]=$(k).value);try{await request('evaluation',old?sb.from('evaluations').update({grades:row.grades,projection:row.projection,confidence:row.confidence,strengths:row.strengths,development:row.development,overall:row.overall,updated_at:row.updated_at}).eq('id',old.id).eq('scout_id',user.id).select().single():sb.from('evaluations').insert(row).select().single());await refresh()}catch(e){notify(e.message,true)}}
 function openModal(title,body){$('modalTitle').textContent=title;$('modalBody').innerHTML=body;$('modal').classList.remove('hidden')}function closeModal(){$('modal').classList.add('hidden')}
 function inp(k,label,val='',type='text'){return '<label class="muted">'+label+'</label><input class="field" id="m_'+k+'" type="'+type+'" value="'+esc(val)+'">'}
 function val(k){return $('m_'+k).value.trim()}
@@ -81,7 +81,7 @@ async function loadWorkspace(prefer){
  const chosen=workspaces.find(x=>x.org_id===(prefer||remembered))||workspaces[0];
  org=chosen.organizations;role=chosen.role;localStorage.setItem(lobbyStore(),org.id);
  renderLobbyOptions();$('workspaceScreen').classList.add('hidden');$('loading').classList.add('hidden');$('desk').classList.remove('hidden');
- selected='';game='';tags=[];players=[];teams=[];games=[];notes=[];stats=[];evals=[];$('noteText').value='';
+ selected='';game='';tags=[];players=[];teams=[];games=[];notes=[];stats=[];evals=[];$('noteText').value='';render();
  $('desk').classList.add('hidden');$('loading').classList.remove('hidden');$('loading').textContent='Loading '+org.name+' scouting records…';
  try{await refresh()}finally{$('loading').classList.add('hidden');$('desk').classList.remove('hidden')}
 }
