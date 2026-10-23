@@ -214,12 +214,29 @@ function openModal(title,body){$('modalTitle').textContent=title;$('modalBody').
 function inp(k,label,val='',type='text'){return '<label class="muted">'+label+'</label><input class="field" id="m_'+k+'" type="'+type+'" value="'+esc(val)+'">'}
 function val(k){return $('m_'+k).value.trim()}
 function chooseModal(kind){let body='';if(kind==='team')body=inp('name','Team name')+inp('school','School')+inp('city','City')+inp('level','Level', 'High School');
-if(kind==='game')body=inp('home','Team A')+inp('away','Team B')+inp('event','Event name')+inp('date','Date',new Date().toISOString().slice(0,10),'date')+inp('venue','Venue');
+if(kind==='game'){
+ const opts='<option value="">Choose a saved roster (or type below)</option>'+teams.map(t=>'<option value="'+esc(t.id)+'">'+esc(t.name)+'</option>').join('');
+ body='<p class="muted">Choose saved teams to enable one-tap Home / Away scouting immediately. Unlisted opponents can be entered manually.</p>'+
+ '<label class="muted">Home roster</label><select class="field" id="m_homeTeam">'+opts+'</select>'+
+ inp('home','Home team name (when not selected)')+
+ '<label class="muted">Away roster</label><select class="field" id="m_awayTeam">'+opts+'</select>'+
+ inp('away','Away team name (when not selected)')+
+ inp('event','Event / tournament')+inp('date','Date',new Date().toISOString().slice(0,10),'date')+inp('venue','Venue')+
+ '<p class="muted">Tip: create the rosters using + Team before creating a game, or link them later.</p>';
+}
 if(kind==='player'||kind==='edit'){const p=kind==='edit'?current():null;body=inp('name','Full name',p?.name)+inp('jersey','Jersey',p?.jersey)+inp('position','Position',p?.position)+inp('class','Graduation class',p?.class_year,'number')+inp('height','Height',p?.height)+inp('hometown','Hometown',p?.hometown)+'<label class="muted">Team</label><select id="m_team" class="field"><option value="">Unassigned</option>'+teams.map(t=>'<option value="'+t.id+'" '+(p?.team_id===t.id?'selected':'')+'>'+esc(t.name)+'</option>').join('')+'</select>'}
 openModal(kind==='edit'?'Edit player':'New '+kind,body+'<button id="commitModal" class="primary" style="width:100%">Save to database</button>');$('commitModal').onclick=async()=>{try{let q;if(kind==='team'){q=sb.from('teams').insert({org_id:org.id,name:val('name'),school:val('school'),city:val('city'),level:val('level'),created_by:user.id})}
-if(kind==='game'){q=sb.from('games').insert({org_id:org.id,home_team:val('home'),away_team:val('away'),event_name:val('event'),game_date:val('date'),venue:val('venue'),created_by:user.id})}
+if(kind==='game'){
+ const homeId=$('m_homeTeam').value||null,awayId=$('m_awayTeam').value||null;
+ if(homeId&&awayId&&homeId===awayId)throw Error('Select different Home and Away teams');
+ const homeName=homeId?teams.find(t=>t.id===homeId)?.name:val('home');
+ const awayName=awayId?teams.find(t=>t.id===awayId)?.name:val('away');
+ if(!homeName||!awayName)throw Error('Home and Away names are required');
+ if(normalizedName(homeName)===normalizedName(awayName))throw Error('Home and Away cannot be the same team');
+ q=sb.from('games').insert({org_id:org.id,home_team:homeName,away_team:awayName,home_team_id:homeId,away_team_id:awayId,event_name:val('event'),game_date:val('date'),venue:val('venue'),created_by:user.id});
+}
 if(kind==='player'||kind==='edit'){const row={name:val('name'),jersey:val('jersey'),position:val('position'),class_year:val('class')?Number(val('class')):null,height:val('height'),hometown:val('hometown'),team_id:$('m_team').value||null};q=kind==='edit'?sb.from('players').update(row).eq('id',selected):sb.from('players').insert({...row,org_id:org.id,created_by:user.id})}
-const r=await q.select().single();if(r.error)throw r.error;if(kind==='game'){game=r.data.id;activeSide='home'}if(kind==='player'){selected=r.data.id;const awayId=sideTeamId('away');const homeId=sideTeamId('home');if(awayId&&r.data.team_id===awayId)activeSide='away';else if(homeId&&r.data.team_id===homeId)activeSide='home'}closeModal();await refresh()}catch(e){notify(e.message,true);alert(e.message)}}}
+const r=await q.select().single();if(r.error)throw r.error;if(kind==='game'){game=r.data.id;activeSide='home';selected=''}if(kind==='player'){selected=r.data.id;const awayId=sideTeamId('away');const homeId=sideTeamId('home');if(awayId&&r.data.team_id===awayId)activeSide='away';else if(homeId&&r.data.team_id===homeId)activeSide='home'}closeModal();await refresh()}catch(e){notify(e.message,true);alert(e.message)}}}
 
 const lobbyStore=()=> 'scoutboard:active-lobby:'+user.id;
 function renderLobbyOptions(){
