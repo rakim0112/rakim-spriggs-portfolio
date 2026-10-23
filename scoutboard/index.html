@@ -50,9 +50,9 @@ async function eventHit(name){
  try{
   const {error}=await sb.rpc('scout_log_event',{workspace_id:lobbyFor,game_uuid:gameFor,player_uuid:playedFor,event_label:name,quarter_label:period,clock_label:$('gameClock').value});
   if(error)throw error;
-  if(org.id===lobbyFor)await refresh();
-  notify('Saved '+name+' to cloud');
- }catch(e){notify('Not saved: '+e.message,true)}
+  notify('Play recorded in database');
+  try{if(org.id===lobbyFor)await refresh();notify('Saved '+name+' to cloud')}catch(refreshError){notify('Play saved; refresh failed. Reopen game.',true)}
+ }catch(e){notify('Save unconfirmed; check timeline before retrying. '+e.message,true)}
  finally{savingEvent=false;document.querySelectorAll('#quickPad button').forEach(b=>b.disabled=false)}
 }
 async function undoStat(k){if(!requireContext())return;const old=getStat();if(!old)return;const c={...old.counters};c[k]=Math.max(0,(Number(c[k])||0)-1);try{await request('undo',sb.from('game_stats').update({counters:c,updated_at:new Date().toISOString()}).eq('id',old.id).eq('scout_id',user.id).select().single());await refresh()}catch(e){notify(e.message,true)}}
