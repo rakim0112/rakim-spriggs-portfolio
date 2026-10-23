@@ -22,9 +22,9 @@
 .quick-context{margin:7px 0}
 .quick-context button{font-size:12px;min-height:34px}
 @media(max-width:700px){.courtside-roster-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.matchup-bar{margin-bottom:12px}.side-button{min-height:68px}.roster .rosterlist{display:none!important}.roster #rosterSearch,.roster #rosterTeamFilter{display:none}.courtside-picker{padding:11px}.center{scroll-margin-top:5px}}
-</style></head><body><header class="header"><div><div class="brand">SCOUT<em>BOARD</em> <span class="pill">PRO DESK</span></div><div class="muted" id="lobbyLabel">Private basketball scouting · One desk, multiple team lobbies</div></div><div class="actions"><label class="teamlabel" for="lobbySelect">TEAM</label><select id="lobbySelect" class="field lobbyselect" aria-label="Active scouting workspace"></select><span id="saveStatus" class="save"></span><button id="exportBtn">Export backup</button><button id="settingsBtn">Workspace</button><button id="logoutBtn">Sign out</button></div></header>
+</style></head><body><header class="header"><div><div class="brand">SCOUT<em>BOARD</em> <span class="pill">PRO DESK</span></div><div class="muted" id="lobbyLabel">Private basketball scouting · One desk, multiple team lobbies</div></div><div class="actions"><label class="teamlabel" for="lobbySelect">TEAM</label><select id="lobbySelect" class="field lobbyselect" aria-label="Active scouting workspace"></select><span id="saveStatus" class="save"></span><button id="toolsBtn">Scout tools</button><button id="exportBtn">Export backup</button><button id="settingsBtn">Workspace</button><button id="logoutBtn">Sign out</button></div></header>
 <main class="wrap"><div id="loading" class="notice">Connecting to scouting database...</div><div id="desk" class="grid hidden">
-<section class="panel roster"><div class="split"><h2 class="title">Active roster</h2><button id="addPlayerBtn" class="primary">+ Player</button></div><input class="field" id="rosterSearch" placeholder="Find name or jersey"><select id="rosterTeamFilter" class="field" aria-label="Filter roster by team"><option value="all">All teams</option></select><div id="rosterList" class="stack rosterlist"></div><hr><h2 class="title">Games &amp; teams</h2><select class="field" id="gameSelect"></select><div class="actions"><button id="newGameBtn">+ Game</button><button id="newTeamBtn">+ Team</button></div><p class="muted">Set the game first. Switch players at any time; all actions track the selected player and game.</p></section>
+<section class="panel roster"><div class="split"><h2 class="title">Active roster</h2><button id="addPlayerBtn" class="primary">+ Player</button></div><input class="field" id="rosterSearch" placeholder="Find name or jersey"><select id="rosterTeamFilter" class="field" aria-label="Filter roster by team"><option value="all">All teams</option></select><div id="rosterList" class="stack rosterlist"></div><hr><h2 class="title">Games &amp; teams</h2><select class="field" id="gameSelect"></select><div class="actions"><button id="newGameBtn">+ Game</button><button id="editGameBtn">Edit game</button><button id="newTeamBtn">+ Team</button><button id="editTeamBtn">Edit team</button></div><p class="muted">Set the game first. Switch players at any time; all actions track the selected player and game.</p></section>
 <section class="panel center"><div class="matchup-bar"><div class="split"><div class="matchup-title" id="matchupTitle">LIVE SCOUTING · Choose your game</div><span class="pill" id="captureStatus">READY</span></div><div class="matchup-sides" id="matchupSides"><button class="side-button active" id="homeSideBtn" aria-pressed="true"><span class="side-caption">HOME</span><span class="side-name" id="homeSideName">Home</span></button><button class="side-button" id="awaySideBtn" aria-pressed="false"><span class="side-caption">AWAY</span><span class="side-name" id="awaySideName">Away</span></button></div></div><div class="split"><div><div class="muted" id="selectedTeam">SELECT A PLAYER</div><div class="h1" id="playerName">Your live scouting desk</div><div class="muted" id="playerInfo">Create or select a player to begin</div><div style="margin-top:9px" class="flex"><label class="muted" for="deskMode">Scouting view</label><select id="deskMode" class="field" style="margin:0;padding:7px;width:auto"><option value="full">Complete report</option><option value="quick">Courtside focus</option></select></div></div><div class="actions"><button id="prevPlayerBtn" aria-label="Previous player">◀</button><button id="nextPlayerBtn" aria-label="Next player">▶</button><button id="editPlayerBtn">Edit</button></div></div><div class="courtside-picker"><div class="split"><h2 class="title" id="sideRosterTitle">SWITCH PLAYER · HOME</h2><button id="matchTeamsBtn" class="tag" title="Connect home and away to their team rosters">Link rosters</button></div><p class="muted" style="margin-top:0">Tap a jersey to switch instantly. Period and clock stay in place.</p><div class="courtside-roster-grid" id="sideRoster"></div><div class="quick-context"><span id="rosterHint" class="muted"></span></div></div><hr><div class="split"><h2 class="title">Live event pad <span id="currentPeriod" class="pill">Q1</span></h2><input id="gameClock" class="field" style="width:90px;margin:0" placeholder="Clock"></div><div class="period actions" id="periodButtons"><button class="on" data-period="Q1">Q1</button><button data-period="Q2">Q2</button><button data-period="Q3">Q3</button><button data-period="Q4">Q4</button><button data-period="OT">OT</button></div><div class="pad" id="quickPad" style="margin-top:12px"></div><hr><h2 class="title">Tracked stat line <span class="muted">(your observations; not official box score)</span></h2><div class="statgrid" id="stats"></div><div class="actions"><button id="reviewEventsBtn" title="Review and reverse an incorrect tap">Review / undo plays</button><span id="syncState" class="muted" role="status" aria-live="polite"></span></div><div id="shootingLine" class="muted" style="margin:9px 0">FG 0/0 · 3PT 0/0 · FT 0/0 · Scout-tracked</div><hr><h2 class="title">Quick scouting tags</h2><div id="tags" class="actions"></div><textarea class="field" id="noteText" style="margin-top:12px" placeholder="Describe what you saw: the read, movement, decision, context, outcome..."></textarea><div class="split"><span class="muted">Tap an event to log instantly, or add context here.</span><button id="saveNoteBtn" class="primary">Save observation ↵</button></div><hr><div class="split"><h2 class="title">Scouting timeline</h2><span class="muted" id="noteCount"></span></div><div class="actions" style="margin-bottom:10px"><button class="tag on" id="currentGameNotes">This game</button><button class="tag" id="allPlayerNotes">All games</button></div><div id="noteList" class="scroll"></div></section>
 <section class="panel right"><div><h2 class="title">Player evaluation · 1–10 scale</h2><p class="muted" style="margin:-6px 0 14px">Grade relative to competition: 1–3 below average, 4–6 average, 7–8 impact, 9–10 exceptional. Record sample size and projection separately.</p><div id="grades"></div><label class="muted">Role / projection</label><select id="projection" class="field"><option value="">Not yet assigned</option><option>Lead guard</option><option>Combo guard</option><option>3-and-D wing</option><option>Scoring wing</option><option>Point forward</option><option>Stretch big</option><option>Rim protector</option><option>Versatile big</option><option>Developmental prospect</option></select><label class="muted">Confidence in evaluation</label><select id="confidence" class="field"><option value="low">Low · single look</option><option value="medium">Medium · multiple looks</option><option value="high">High · extensive film/live</option></select><label class="muted">Strengths</label><textarea id="strengths" class="field" placeholder="Repeatable positive traits"></textarea><label class="muted">Development areas</label><textarea id="development" class="field" placeholder="Skills and decision-making gaps"></textarea><label class="muted">Overall assessment</label><textarea id="overall" class="field" placeholder="Role, ceiling, floor, context and evidence"></textarea><div class="actions"><button id="saveEvalBtn" class="primary">Save evaluation</button><button id="reportBtn">Player report</button></div><p class="muted">Grades and stat totals are specific to each scout, player and game. Changes retain revision history.</p></div><hr><div><h2 class="title">Game context</h2><div id="gameInfo" class="muted">No game selected</div></div></section></div><div class="footer">ScoutBoard · Private team workspaces · Export regularly · Obtain permission before recording or publishing student information</div></main>
 <div id="authScreen" class="modal"><div class="panel"><div class="brand">SCOUT<em>BOARD</em></div><p class="muted">Open to all scouts. Your team records are private to invited members. Sign in to create or join a scouting lobby.</p><label>Email address</label><input class="field" type="email" id="email" placeholder="scout@example.com"><button class="primary" id="loginBtn" style="width:100%">Send sign-in link</button><div id="authMessage" class="notice">Check your email, then open the sign-in link on this device.</div></div></div>
@@ -125,6 +125,7 @@ function render(){const filter=$('rosterSearch').value.toLowerCase();const tf=$(
 $('gameSelect').innerHTML=games.map(g=>'<option value="'+g.id+'" '+(g.id===game?'selected':'')+'>'+esc(g.game_date+' · '+g.home_team+' vs '+g.away_team)+'</option>').join('')||'<option value="">Create your first game</option>';
 showSideRoster();
 const p=current();$('selectedTeam').textContent=p?teamName(p):'SELECT A PLAYER';$('playerName').textContent=p?p.name:'Your live scouting desk';$('playerInfo').textContent=p?'#'+(p.jersey||'--')+' · '+(p.position||'Position TBD')+' · '+(p.height||'Height TBD')+' · '+(p.class_year||'Class TBD'):'Create or select a player to begin';
+const oldFilm=$('filmLink');if(oldFilm)oldFilm.remove();if(p?.video_url&&/^https:\/\//i.test(p.video_url)){const a=document.createElement('a');a.id='filmLink';a.href=p.video_url;a.target='_blank';a.rel='noopener noreferrer';a.textContent='Open film / highlights ↗';a.style.display='inline-block';a.style.marginTop='8px';$('playerInfo').after(a)}
 const g=games.find(x=>x.id===game);$('gameInfo').textContent=g?g.game_date+' · '+g.home_team+' vs '+g.away_team+' · '+(g.event_name||'Game')+' · '+(g.venue||'Venue TBD'):'Create a game to track observations';
 $('currentPeriod').textContent=period;
 $('quickPad').innerHTML=eventLabels.map(e=>'<button data-event="'+esc(e)+'">'+esc(e)+'</button>').join('');
@@ -213,30 +214,69 @@ async function saveEval(){if(!requireContext())return;const old=getEval();const 
 function openModal(title,body){$('modalTitle').textContent=title;$('modalBody').innerHTML=body;$('modal').classList.remove('hidden')}function closeModal(){$('modal').classList.add('hidden')}
 function inp(k,label,val='',type='text'){return '<label class="muted">'+label+'</label><input class="field" id="m_'+k+'" type="'+type+'" value="'+esc(val)+'">'}
 function val(k){return $('m_'+k).value.trim()}
-function chooseModal(kind){let body='';if(kind==='team')body=inp('name','Team name')+inp('school','School')+inp('city','City')+inp('level','Level', 'High School');
-if(kind==='game'){
- const opts='<option value="">Choose a saved roster (or type below)</option>'+teams.map(t=>'<option value="'+esc(t.id)+'">'+esc(t.name)+'</option>').join('');
- body='<p class="muted">Choose saved teams to enable one-tap Home / Away scouting immediately. Unlisted opponents can be entered manually.</p>'+
- '<label class="muted">Home roster</label><select class="field" id="m_homeTeam">'+opts+'</select>'+
- inp('home','Home team name (when not selected)')+
- '<label class="muted">Away roster</label><select class="field" id="m_awayTeam">'+opts+'</select>'+
- inp('away','Away team name (when not selected)')+
- inp('event','Event / tournament')+inp('date','Date',new Date().toISOString().slice(0,10),'date')+inp('venue','Venue')+
- '<p class="muted">Tip: create the rosters using + Team before creating a game, or link them later.</p>';
+function chooseModal(kind){
+ let body='';
+ const t=kind==='editTeam'?teams.find(t=>t.id===$('rosterTeamFilter').value):null;
+ const g=kind==='editGame'?activeGame():null;
+ if(kind==='editTeam'&&!t){notify('Choose a team from the roster filter to edit',true);return}
+ if(kind==='editGame'&&!g){notify('Choose a game to edit',true);return}
+ if(kind==='team'||kind==='editTeam'){
+  body=inp('name','Team name',t?.name)+inp('school','School',t?.school)+inp('city','City',t?.city)+inp('level','Level',t?.level||'High School');
+ }
+ if(kind==='game'||kind==='editGame'){
+  const choices='<option value="">Type an opponent below</option>'+teams.map(t=>'<option value="'+esc(t.id)+'" '+(t.id===g?.home_team_id?'selected':'')+'>'+esc(t.name)+'</option>').join('');
+  const awayChoices='<option value="">Type an opponent below</option>'+teams.map(t=>'<option value="'+esc(t.id)+'" '+(t.id===g?.away_team_id?'selected':'')+'>'+esc(t.name)+'</option>').join('');
+  body='<p class="muted">Link saved teams to activate Home/Away jersey switching. Unlisted opponents can be entered by name.</p>'+
+   '<label class="muted">Home roster</label><select id="m_homeTeam" class="field">'+choices+'</select>'+
+   inp('home','Home name (if no roster)',g?.home_team)+
+   '<label class="muted">Away roster</label><select id="m_awayTeam" class="field">'+awayChoices+'</select>'+
+   inp('away','Away name (if no roster)',g?.away_team)+
+   inp('event','Event / tournament',g?.event_name)+inp('date','Game date',g?.game_date||new Date().toISOString().slice(0,10),'date')+
+   inp('venue','Venue',g?.venue);
+ }
+ if(kind==='player'||kind==='edit'){
+  const p=kind==='edit'?current():null;
+  body=inp('name','Full name',p?.name)+inp('jersey','Jersey',p?.jersey)+inp('position','Position',p?.position)+
+   inp('class','Graduation year',p?.class_year,'number')+inp('height','Height',p?.height)+inp('hometown','Hometown',p?.hometown)+
+   inp('video','Film/highlight URL (https only)',p?.video_url)+inp('bio','Profile context',p?.bio)+
+   '<label class="muted">Team</label><select id="m_team" class="field"><option value="">Unassigned</option>'+
+   teams.map(t=>'<option value="'+esc(t.id)+'" '+(p?.team_id===t.id?'selected':'')+'>'+esc(t.name)+'</option>').join('')+'</select>';
+ }
+ openModal(kind==='edit'?'Edit player':kind==='editGame'?'Edit game':kind==='editTeam'?'Edit team':'New '+kind,body+
+  '<button id="commitModal" class="primary" style="width:100%">Save to database</button>');
+ $('commitModal').onclick=async()=>{
+  const btn=$('commitModal');if(btn.disabled)return;btn.disabled=true;btn.textContent='Saving…';
+  try{
+   let q;
+   if(kind==='team'||kind==='editTeam'){
+    const row={name:val('name'),school:val('school'),city:val('city'),level:val('level')};
+    if(!row.name)throw Error('A team name is required');
+    q=kind==='editTeam'?sb.from('teams').update(row).eq('id',t.id).eq('org_id',org.id):sb.from('teams').insert({...row,org_id:org.id,created_by:user.id});
+   }
+   if(kind==='game'||kind==='editGame'){
+    const homeId=$('m_homeTeam').value||null,awayId=$('m_awayTeam').value||null;
+    if(homeId&&homeId===awayId)throw Error('Home and Away must be different teams');
+    const homeName=homeId?teams.find(t=>t.id===homeId)?.name:val('home');
+    const awayName=awayId?teams.find(t=>t.id===awayId)?.name:val('away');
+    if(!homeName||!awayName)throw Error('Enter both Home and Away team names');
+    if(normalizedName(homeName)===normalizedName(awayName))throw Error('Home and Away cannot be the same');
+    const row={home_team:homeName,away_team:awayName,home_team_id:homeId,away_team_id:awayId,event_name:val('event'),game_date:val('date'),venue:val('venue')};
+    q=kind==='editGame'?sb.from('games').update(row).eq('id',g.id).eq('org_id',org.id):sb.from('games').insert({...row,org_id:org.id,created_by:user.id});
+   }
+   if(kind==='player'||kind==='edit'){
+    const row={name:val('name'),jersey:val('jersey'),position:val('position'),class_year:val('class')?Number(val('class')):null,
+     height:val('height'),hometown:val('hometown'),team_id:$('m_team').value||null,video_url:val('video'),bio:val('bio')};
+    if(!row.name)throw Error('Player name is required');
+    if(row.video_url&&!/^https:\/\/[a-z0-9.-]+/i.test(row.video_url))throw Error('Film link must begin with https://');
+    q=kind==='edit'?sb.from('players').update(row).eq('id',selected).eq('org_id',org.id):sb.from('players').insert({...row,org_id:org.id,created_by:user.id});
+   }
+   const r=await q.select().single();if(r.error)throw r.error;
+   if(kind==='game'){game=r.data.id;activeSide='home';selected=''}
+   if(kind==='player')selected=r.data.id;
+   closeModal();await refresh();notify('Saved to scouting workspace');
+  }catch(e){notify(e.message,true);btn.disabled=false;btn.textContent='Save to database'}
+ };
 }
-if(kind==='player'||kind==='edit'){const p=kind==='edit'?current():null;body=inp('name','Full name',p?.name)+inp('jersey','Jersey',p?.jersey)+inp('position','Position',p?.position)+inp('class','Graduation class',p?.class_year,'number')+inp('height','Height',p?.height)+inp('hometown','Hometown',p?.hometown)+'<label class="muted">Team</label><select id="m_team" class="field"><option value="">Unassigned</option>'+teams.map(t=>'<option value="'+t.id+'" '+(p?.team_id===t.id?'selected':'')+'>'+esc(t.name)+'</option>').join('')+'</select>'}
-openModal(kind==='edit'?'Edit player':'New '+kind,body+'<button id="commitModal" class="primary" style="width:100%">Save to database</button>');$('commitModal').onclick=async()=>{try{let q;if(kind==='team'){q=sb.from('teams').insert({org_id:org.id,name:val('name'),school:val('school'),city:val('city'),level:val('level'),created_by:user.id})}
-if(kind==='game'){
- const homeId=$('m_homeTeam').value||null,awayId=$('m_awayTeam').value||null;
- if(homeId&&awayId&&homeId===awayId)throw Error('Select different Home and Away teams');
- const homeName=homeId?teams.find(t=>t.id===homeId)?.name:val('home');
- const awayName=awayId?teams.find(t=>t.id===awayId)?.name:val('away');
- if(!homeName||!awayName)throw Error('Home and Away names are required');
- if(normalizedName(homeName)===normalizedName(awayName))throw Error('Home and Away cannot be the same team');
- q=sb.from('games').insert({org_id:org.id,home_team:homeName,away_team:awayName,home_team_id:homeId,away_team_id:awayId,event_name:val('event'),game_date:val('date'),venue:val('venue'),created_by:user.id});
-}
-if(kind==='player'||kind==='edit'){const row={name:val('name'),jersey:val('jersey'),position:val('position'),class_year:val('class')?Number(val('class')):null,height:val('height'),hometown:val('hometown'),team_id:$('m_team').value||null};q=kind==='edit'?sb.from('players').update(row).eq('id',selected):sb.from('players').insert({...row,org_id:org.id,created_by:user.id})}
-const r=await q.select().single();if(r.error)throw r.error;if(kind==='game'){game=r.data.id;activeSide='home';selected=''}if(kind==='player'){selected=r.data.id;const awayId=sideTeamId('away');const homeId=sideTeamId('home');if(awayId&&r.data.team_id===awayId)activeSide='away';else if(homeId&&r.data.team_id===homeId)activeSide='home'}closeModal();await refresh()}catch(e){notify(e.message,true);alert(e.message)}}}
 
 const lobbyStore=()=> 'scoutboard:active-lobby:'+user.id;
 function renderLobbyOptions(){
@@ -339,7 +379,7 @@ document.addEventListener('click',async e=>{
 
 $('deskMode').onchange=e=>{const quick=e.target.value==='quick';$('desk').classList.toggle('quick',quick);localStorage.setItem('scoutboard:desk-mode',quick?'quick':'full')};$('deskMode').value=localStorage.getItem('scoutboard:desk-mode')||'full';$('desk').classList.toggle('quick',$('deskMode').value==='quick');
 $('exportBtn').onclick=backup;$('reportBtn').onclick=report;$('closeModal').onclick=closeModal;
-$('addPlayerBtn').onclick=()=>chooseModal('player');$('newTeamBtn').onclick=()=>chooseModal('team');$('newGameBtn').onclick=()=>chooseModal('game');$('editPlayerBtn').onclick=()=>{if(current())chooseModal('edit')};
+$('addPlayerBtn').onclick=()=>chooseModal('player');$('newTeamBtn').onclick=()=>chooseModal('team');$('newGameBtn').onclick=()=>chooseModal('game');$('editGameBtn').onclick=()=>chooseModal('editGame');$('editTeamBtn').onclick=()=>chooseModal('editTeam');$('editPlayerBtn').onclick=()=>{if(current())chooseModal('edit')};
 $('homeSideBtn').onclick=()=>chooseSide('home');$('awaySideBtn').onclick=()=>chooseSide('away');$('sideRoster').onclick=e=>{const b=e.target.closest('[data-side-player]');if(b)choosePlayer(b.dataset.sidePlayer)};$('matchTeamsBtn').onclick=openRosterLink;
 $('prevPlayerBtn').onclick=()=>step(-1);$('nextPlayerBtn').onclick=()=>step(1);
 $('gameSelect').onchange=e=>{stashDraft();game=e.target.value;activeSide='home';selected=rosterForSide(activeSide)[0]?.id||'';$('noteText').value='';tags=[];render()};$('rosterSearch').oninput=render;$('rosterTeamFilter').onchange=render;
