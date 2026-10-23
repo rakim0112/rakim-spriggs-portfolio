@@ -45,8 +45,62 @@ function getStat(){return stats.find(s=>s.player_id===selected&&s.game_id===game
 function getEval(){return evals.find(s=>s.player_id===selected&&s.game_id===game&&s.scout_id===user?.id)}
 function teamName(p){return teams.find(t=>t.id===p?.team_id)?.name||'Unassigned team'}
 function requireContext(){if(!selected||!game){notify('Choose a player and game first',true);return false}return true}
-async function refresh(){if(!org)return;const oldP=selected,oldG=game;const noteDraft=$('noteText').value;const fieldDraft={};['projection','confidence','strengths','development','overall'].forEach(k=>fieldDraft[k]=$(k).value);const gradesDraft=Array.from(document.querySelectorAll('.gradeInput')).map(x=>[x.dataset.grade,x.value]);const id=org.id;const qs=[['teams',sb.from('teams').select('*').eq('org_id',id).order('name')],['games',sb.from('games').select('*').eq('org_id',id).order('game_date',{ascending:false})],['players',sb.from('players').select('*').eq('org_id',id).order('jersey')],['scouting_notes',sb.from('scouting_notes').select('*').eq('org_id',id).order('created_at',{ascending:false}).limit(1000)],['game_stats',sb.from('game_stats').select('*').eq('org_id',id)],['evaluations',sb.from('evaluations').select('*').eq('org_id',id)]];const responses=await Promise.all(qs.map(async ([name,q])=>({name,...await q})));for(const r of responses){const name=r.name;if(r.error)throw new Error(name+': '+r.error.message);if(name==='scouting_notes')notes=r.data;else if(name==='game_stats')stats=r.data;else if(name==='evaluations')evals=r.data;else window[name]=r.data;}teams=window.teams;games=window.games;players=window.players;game=games.some(g=>g.id===game)?game:(games[0]?.id||'');const activeRoster=rosterForSide(activeSide);selected=players.some(p=>p.id===selected)&&(!activeRoster.length||activeRoster.some(p=>p.id===selected))?selected:(activeRoster[0]?.id||'');render();if(oldP===selected&&oldG===game){$('noteText').value=noteDraft;for(const [k,v] of Object.entries(fieldDraft))$(k).value=v;for(const [k,v] of gradesDraft){const el=Array.from(document.querySelectorAll('.gradeInput')).find(x=>x.dataset.grade===k);if(el)el.value=v;}}notify('Synced to cloud')}
-
+async function fetchPagedNotes(filters,max=25000){
+ const out=[];
+ for(let offset=0;offset<max;offset+=500){
+  let q=sb.from('scouting_notes').select('*').eq('org_id',org.id).order('created_at',{ascending:false});
+  for(const [k,v] of Object.entries(filters||{})){q=q.eq(k,v)}
+  const r=await q.range(offset,offset+499);
+  if(r.error)throw r.error;
+  out.push(...r.data);
+  if(r.data.length<500)break;
+ }
+ return out;
+}
+async function loadPlayerHistory(){
+ if(!selected||!org)return;
+ const originOrg=org.id,target=selected;
+ const rows=await fetchPagedNotes({player_id:target});
+ if(org.id!==originOrg||selected!==target)return;
+ const map=new Map(notes.map(n=>[n.id,n]));
+ for(const row of rows)map.set(row.id,row);
+ notes=[...map.values()].sort((a,b)=>String(b.created_at).localeCompare(String(a.created_at)));
+}
+async function refresh(){
+ if(!org)return;
+ const originOrg=org.id,oldP=selected,oldG=game;
+ const noteDraft=$('noteText').value;
+ const fieldDraft={};['projection','confidence','strengths','development','overall'].forEach(k=>fieldDraft[k]=$(k).value);
+ const gradesDraft=Array.from(document.querySelectorAll('.gradeInput')).map(x=>[x.dataset.grade,x.value]);
+ const qs=[
+  ['teams',sb.from('teams').select('*').eq('org_id',originOrg).order('name')],
+  ['games',sb.from('games').select('*').eq('org_id',originOrg).order('game_date',{ascending:false})],
+  ['players',sb.from('players').select('*').eq('org_id',originOrg).order('jersey')],
+  ['game_stats',sb.from('game_stats').select('*').eq('org_id',originOrg)],
+  ['evaluations',sb.from('evaluations').select('*').eq('org_id',originOrg)]
+ ];
+ const responses=await Promise.all(qs.map(async ([name,q])=>({name,...await q})));
+ if(org.id!==originOrg)return;
+ const data=Object.fromEntries(responses.map(r=>{if(r.error)throw Error(r.name+': '+r.error.message);return [r.name,r.data]}));
+ teams=data.teams;games=data.games;players=data.players;stats=data.game_stats;evals=data.evaluations;
+ game=games.some(g=>g.id===game)?game:(games[0]?.id||'');
+ const activeRoster=rosterForSide(activeSide);
+ selected=players.some(p=>p.id===selected)&&(!activeRoster.length||activeRoster.some(p=>p.id===selected))?selected:(activeRoster[0]?.id||'');
+ notes=game?await fetchPagedNotes({game_id:game}):[];
+ if(noteScope==='all'&&selected)await loadPlayerHistory();
+ if(org.id!==originOrg)return;
+ render();
+ if(oldP===selected&&oldG===game){
+  $('noteText').value=noteDraft;
+  for(const [k,v] of Object.entries(fieldDraft))$(k).value=v;
+  for(const [k,v] of gradesDraft){
+   const el=Array.from(document.querySelectorAll('.gradeInput')).find(x=>x.dataset.grade===k);
+   if(el)el.value=v;
+  }
+ }
+ showPendingRecovery();
+ notify('Synced to cloud');
+}
 function activeGame(){return games.find(g=>g.id===game)}
 function normalizedName(s){return String(s||'').trim().replace(/\s+/g,' ').toLowerCase()}
 function sideTeamId(side){
@@ -384,7 +438,7 @@ function renderBoardRows(){
   const m=boardMetrics(p);
   return '<button class="player" data-board-player="'+esc(p.id)+'"><span class="jersey">'+esc(p.jersey||'—')+'</span>'+
    '<span style="flex:1"><b>'+esc(p.name)+'</b><div class="muted">'+esc(teamName(p))+' · '+esc(p.position||'Position open')+' · Class '+esc(p.class_year||'TBD')+'</div>'+
-   '<div class="muted">'+m.notes+' observations · '+m.games+' observed games · '+m.evaluated+' of your saved evaluations</div></span></button>';
+   '<div class="muted">'+m.notes+' loaded observations · '+m.games+' loaded games · '+m.evaluated+' of your saved evaluations</div></span></button>';
  }).join('')||'<p class="muted">No players match this filter.</p>';
  $('boardRows').onclick=e=>{const b=e.target.closest('[data-board-player]');if(!b)return;closeModal();choosePlayer(b.dataset.boardPlayer)};
 }
@@ -415,8 +469,8 @@ async function exportScoutingCsv(){
   notify('Exported '+all.length+' scouting observations');
  }catch(e){notify('CSV export failed: '+e.message,true)}
 }
-function report(){
- const p=current();if(!p)return;
+async function report(){
+ const p=current();if(!p)return;try{await loadPlayerHistory()}catch(e){notify('History incomplete: '+e.message,true)}
  const g=activeGame(),evalThis=getEval(),statThis=getStat();
  const safe=Object.fromEntries(Object.entries(statThis?.counters||{}).map(([k,v])=>[k,Number(v)||0]));
  const pct=(made,attempted)=>attempted?((100*made/attempted).toFixed(1)+'%'):'N/A';
@@ -503,7 +557,7 @@ $('gameSelect').onchange=e=>{stashDraft();game=e.target.value;activeSide='home';
 $('rosterList').onclick=e=>{const b=e.target.closest('[data-player]');if(b)choosePlayer(b.dataset.player)};
 $('periodButtons').onclick=e=>{const b=e.target.closest('[data-period]');if(!b)return;period=b.dataset.period;document.querySelectorAll('[data-period]').forEach(x=>x.classList.toggle('on',x===b));$('currentPeriod').textContent=period};
 $('quickPad').onclick=e=>{const b=e.target.closest('[data-event]');if(b)eventHit(b.dataset.event)};
-$('noteList').onclick=e=>{const b=e.target.closest('[data-void-event]');if(b)voidStatEvent(b.dataset.voidEvent)};$('reviewEventsBtn').onclick=()=>{noteScope='game';render();$('noteList').scrollIntoView({behavior:'smooth',block:'nearest'});notify('Select Undo this play in the timeline to reverse the complete event')};$('currentGameNotes').onclick=()=>{noteScope='game';render()};$('allPlayerNotes').onclick=()=>{noteScope='all';render()};
+$('noteList').onclick=e=>{const b=e.target.closest('[data-void-event]');if(b)voidStatEvent(b.dataset.voidEvent)};$('reviewEventsBtn').onclick=()=>{noteScope='game';render();$('noteList').scrollIntoView({behavior:'smooth',block:'nearest'});notify('Select Undo this play in the timeline to reverse the complete event')};$('currentGameNotes').onclick=()=>{noteScope='game';render()};$('allPlayerNotes').onclick=async()=>{noteScope='all';try{await loadPlayerHistory();render()}catch(e){notify('History load failed: '+e.message,true)}};
 $('tags').onclick=e=>{const b=e.target.closest('[data-tag]');if(!b)return;const t=b.dataset.tag;tags=tags.includes(t)?tags.filter(x=>x!==t):[...tags,t];b.classList.toggle('on',tags.includes(t));$('noteText').placeholder=t+' observation — what did you see?';stashDraft()};
 $('noteText').addEventListener('input',stashDraft);['projection','confidence','strengths','development','overall'].forEach(k=>$(k).addEventListener('input',stashDraft));$('grades').addEventListener('change',stashDraft);
 $('saveNoteBtn').onclick=()=>{const t=$('noteText').value.trim();if(!t){notify('Write an observation first',true);return}saveNote(t,tags)};
