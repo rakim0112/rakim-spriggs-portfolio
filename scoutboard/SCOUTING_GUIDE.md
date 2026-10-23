@@ -50,3 +50,11 @@ Tracked stats are scout observations, not official box-score statistics.
 
 ## Technical integration
 The app uses a static Netlify frontend with a hosted Supabase PostgreSQL backend, and is intended to be integrated with another site later without changing the primary scouting database. Never commit secret/service-role keys to a public repository.
+## Switch players like the courtside redesign
+- In the live scouting desk, tap **HOME** or **AWAY** at the top of the game. The player's side changes immediately.
+- Tap a **jersey-number card** to select any player on that side; no page navigation is required.
+- **Previous / Next** cycles through the players on that side. The quarter and game clock do not reset.
+- If the cards are empty or show **Roster not linked**, tap **Link rosters** and select the Home and Away team. This association saves to the cloud for every scout in your lobby.
+- Write your quick note or choose basketball tags at any time. Switching players keeps unfinished note and evaluation drafts *on that device*. Revisit the player to continue.
+- **Save observation** sends a note to the team's cloud database. A device draft is not yet shared with other scouts and is not an independent backup.
+- If someone adds a new game before either team exists, create the teams and players first, then link both rosters before recording events. This avoids attributing a play to the wrong player.
