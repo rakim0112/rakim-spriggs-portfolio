@@ -58,3 +58,31 @@ The app uses a static Netlify frontend with a hosted Supabase PostgreSQL backend
 - Write your quick note or choose basketball tags at any time. Switching players keeps unfinished note and evaluation drafts *on that device*. Revisit the player to continue.
 - **Save observation** sends a note to the team's cloud database. A device draft is not yet shared with other scouts and is not an independent backup.
 - If someone adds a new game before either team exists, create the teams and players first, then link both rosters before recording events. This avoids attributing a play to the wrong player.
+
+## Current courtside release
+- **Scout tools → Prospect board** opens a searchable list of all players by name, jersey, team, position, and graduation class. It shows evidence coverage, not an automated talent ranking.
+- **Scout tools → Export full scouting timeline (CSV)** downloads all observation entries accessible in the active team. Entries explicitly identify reversed events.
+- **Player report** includes scout-tracked shooting percentages, that scout's evaluation, observations from the selected game, and available player history.
+- **Home / Away** switches between rosters. Creating a game now lets you link saved teams immediately, and **Edit game** fixes matchups and dates later.
+- **Edit team** uses the roster team filter on desktop; players can be edited individually from their selected profile.
+- **↻ Sync** refreshes your desk. The most recent game, side, player, period, and game clock are saved locally so a page reload does not reset your courtside selection.
+- **Review / undo plays** reverses the entire recorded stat event, rather than subtracting an arbitrary point. Reversed observations remain in the historical timeline.
+- **Mobile homescreen shortcut:** open your published Netlify website in your browser and use Add to Home Screen, when offered. ScoutBoard still requires network access for cloud saves; it is not an offline-first application.
+- **Retry pending play** reuses a unique request ID if a connection problem leaves a tap unconfirmed. It cannot double-count that same request. Verify the timeline before clearing an unconfirmed event.
+- **Privacy notice** is available in the sign-in interface and footer.
+
+## Publication and operations
+The application is published from the `scoutboard` directory of the GitHub repository `rakim0112/rakim-spriggs-portfolio`; `scoutboard/netlify.toml` contains the static-site build configuration. In Netlify, configure the site **scoutboardcentral** to use production branch `main`, Base directory `scoutboard`, Publish directory `.`, and no build command. Confirm **Published** status in Netlify's Deploys screen. Maintain the Supabase Auth Site URL and allowed Redirect URL as `https://scoutboardcentral.netlify.app/`.
+
+Supabase project: `utqefsoimeijjveytqmv`. The public frontend contains only the publishable client key. Never expose the Supabase secret/service-role key.
+
+### Production acceptance checks
+1. Confirm the Netlify link renders, including mobile, and users can request and complete sign-in links.
+2. From account A, create a private lobby, two teams, a game and a player. Log a made shot and confirm the points and FGM/FGA values.
+3. Refresh the page and sign in on a second device. Confirm the cloud observation remains while unfinished drafts are device-local.
+4. Generate an invitation, sign in as account B, join account A's lobby, and verify data access. Make a separate lobby for account B and confirm A cannot see B's private records without membership.
+5. Reverse an incorrectly recorded made shot. Check that all affected counters decrement and the source event is marked **REVERSED**, not erased.
+6. Export JSON and CSV, open both files, and verify the report contains the expected records. Keep copies securely.
+7. Test slow/offline network behavior: a pending event must be retried with the same request ID, not tapped again as a new event.
+
+Database transaction tests have passed for atomic event recording, deduplication, reversal, roster membership, and access restrictions, but **the current live Netlify production deployment, real email delivery, full mobile cross-device authentication, disaster recovery, and large-scale load testing still require human acceptance testing**.
