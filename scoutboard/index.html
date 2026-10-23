@@ -240,7 +240,7 @@ async function eventHit(name){
   if(error)throw error;
   localStorage.removeItem(pendingKey);
   notify('Saved '+name+' to cloud');
-  try{await syncSavedEvent(noteId,playedFor,gameFor,lobbyFor)}catch(err){notify('Play saved; use ↻ Sync to refresh the display.',true)}
+  try{await syncSavedEvent(noteId,playedFor,gameFor,lobbyFor)}catch(err){try{await refresh();notify('Play saved and synced')}catch(refreshErr){notify('Play saved. Tap ↻ Sync when your connection returns.',true)}}
  }catch(e){
   // Keep the identical request ID, so retry cannot count the same shot twice.
   $('syncState').textContent='Unconfirmed';
