@@ -1,0 +1,18 @@
+{
+  "name": "ScoutBoard Central — Basketball Scouting",
+  "short_name": "ScoutBoard",
+  "description": "Private collaborative basketball scouting, courtside game notes and team-lobby reports.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#07111f",
+  "theme_color": "#d2fa63",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
