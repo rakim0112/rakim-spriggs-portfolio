@@ -1,0 +1,6 @@
+# ScoutBoard-only Netlify configuration.
+# Select 'scoutboard' as the Base directory for this site.
+# This app is static HTML: no npm install and no build command.
+[build]
+  publish = "."
+  command = ""
