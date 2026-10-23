@@ -336,7 +336,124 @@ async function openTeamSettings(){
 
 function download(file,text,mime){const blob=new Blob([text],{type:mime});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=file;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
 async function backup(){try{notify('Preparing complete export…');const tableNames=['organizations','memberships','teams','games','players','scouting_notes','evaluations','game_stats','scout_revisions'];const data={format:'ScoutBoard JSON backup v1',exported_at:new Date().toISOString(),workspace:org.name,tables:{}};for(const t of tableNames){let rows=[],from=0;while(true){const r=await sb.from(t).select('*').eq(t==='memberships'?'org_id':t==='organizations'?'id':'org_id',org.id).range(from,from+499);if(r.error)throw r.error;rows.push(...r.data);if(r.data.length<500)break;from+=500}data.tables[t]=rows}download('ScoutBoard-backup-'+new Date().toISOString().slice(0,10)+'.json',JSON.stringify(data,null,2),'application/json');notify('Backup exported')}catch(e){notify('Export failed: '+e.message,true)}}
-function report(){if(!current())return;const p=current(),e=getEval(),s=getStat();const text=['SCOUTBOARD / HS SCOUTING REPORTS',p.name+' #'+p.jersey,teamName(p),p.position+' | '+p.height+' | '+p.class_year,'Game: '+(games.find(g=>g.id===game)?.event_name||''),'','PROJECTION: '+(e?.projection||'Unassigned'),'CONFIDENCE: '+(e?.confidence||'Low'),'STRENGTHS: '+(e?.strengths||''),'DEVELOPMENT: '+(e?.development||''),'OVERALL: '+(e?.overall||''),'','GRADES:',JSON.stringify(e?.grades||{},null,2),'','SCOUT-TRACKED STATS:',JSON.stringify(s?.counters||{},null,2),'','OBSERVATIONS:',...notes.filter(n=>n.player_id===selected).map(n=>new Date(n.created_at).toLocaleString()+' '+n.period+' '+n.content)].join('\n');download('ScoutReport-'+p.name.replace(/\W+/g,'-')+'.txt',text,'text/plain')}
+
+function openScoutTools(){
+ openModal('Scout tools','<p class="muted">Game-night speed when you need it; searchable evaluations and exports when you have more time.</p>'+
+ '<div class="stack">'+
+ '<button id="openProspectBoard" class="primary">Open prospect board</button>'+
+ '<button id="exportScoutingCsv">Export full scouting timeline (CSV)</button>'+
+ '<button id="exportToolsBackup">Download organization backup (JSON)</button>'+
+ '<button id="openHelp">Quick-start walkthrough</button>'+
+ '</div><p class="muted">Every team lobby is private. Data exports remain your responsibility to store securely, especially when evaluating minors.</p>');
+ $('openProspectBoard').onclick=openProspectBoard;
+ $('exportScoutingCsv').onclick=exportScoutingCsv;
+ $('exportToolsBackup').onclick=backup;
+ $('openHelp').onclick=()=>openModal('Five-minute courtside walkthrough',
+ '<div class="stack"><p><b>1.</b> Create or select a game and assign Home and Away rosters.</p>'+
+ '<p><b>2.</b> Tap HOME or AWAY, then a jersey card to select the correct player.</p>'+
+ '<p><b>3.</b> Tap a basketball event, or record a more detailed observation with tags.</p>'+
+ '<p><b>4.</b> If you tap the wrong event, find it in This game timeline and choose Undo this play.</p>'+
+ '<p><b>5.</b> After the game, rate the player relative to this competition and record strengths, development areas, projection and confidence.</p>'+
+ '<p><b>6.</b> Export a player report or a full team backup. Save the backup to a secure location.</p></div>'+
+ '<p class="muted">Quick saves require an internet connection. Unsent text drafts stay only on this device until explicitly saved.</p>');
+}
+function boardMetrics(p){
+ const noteRecords=notes.filter(n=>n.player_id===p.id&&!n.voided_at);
+ const ownEval=evals.filter(e=>e.player_id===p.id&&e.scout_id===user.id);
+ const gameIds=new Set(noteRecords.map(n=>n.game_id).filter(Boolean));
+ return {notes:noteRecords.length,games:gameIds.size,evaluated:ownEval.length,latest:noteRecords[0]?.created_at||null};
+}
+function openProspectBoard(){
+ const options='<option value="all">All positions</option>'+[...new Set(players.map(p=>p.position).filter(Boolean))].sort().map(x=>'<option value="'+esc(x)+'">'+esc(x)+'</option>').join('');
+ openModal('Prospect board','<p class="muted">Player profiles, game observations, and your saved evaluations. No automatic talent ranking—grades depend on competition, context, and sample size.</p>'+
+ '<input class="field" id="boardSearch" placeholder="Search name, jersey, team or class">'+
+ '<select class="field" id="boardPosition">'+options+'</select>'+
+ '<div class="split"><span id="boardCount" class="muted"></span><button id="boardExport" class="tag">Export timeline CSV</button></div>'+
+ '<div id="boardRows" class="stack" style="margin-top:10px;max-height:55vh;overflow:auto"></div>');
+ $('boardSearch').oninput=renderBoardRows;
+ $('boardPosition').onchange=renderBoardRows;
+ $('boardExport').onclick=exportScoutingCsv;
+ renderBoardRows();
+}
+function renderBoardRows(){
+ const q=$('boardSearch').value.toLowerCase(),position=$('boardPosition').value;
+ const matches=players.filter(p=>(position==='all'||p.position===position)&&
+ [p.name,p.jersey,teamName(p),p.class_year].join(' ').toLowerCase().includes(q));
+ $('boardCount').textContent=matches.length+' of '+players.length+' players';
+ $('boardRows').innerHTML=matches.map(p=>{
+  const m=boardMetrics(p);
+  return '<button class="player" data-board-player="'+esc(p.id)+'"><span class="jersey">'+esc(p.jersey||'—')+'</span>'+
+   '<span style="flex:1"><b>'+esc(p.name)+'</b><div class="muted">'+esc(teamName(p))+' · '+esc(p.position||'Position open')+' · Class '+esc(p.class_year||'TBD')+'</div>'+
+   '<div class="muted">'+m.notes+' observations · '+m.games+' observed games · '+m.evaluated+' of your saved evaluations</div></span></button>';
+ }).join('')||'<p class="muted">No players match this filter.</p>';
+ $('boardRows').onclick=e=>{const b=e.target.closest('[data-board-player]');if(!b)return;closeModal();choosePlayer(b.dataset.boardPlayer)};
+}
+function csvField(value){
+ let x=String(value??'');
+ if(/^\s*[=+\-@]/.test(x))x="'"+x;
+ return '"'+x.replace(/"/g,'""')+'"';
+}
+async function exportScoutingCsv(){
+ if(!org)return;
+ try{
+  notify('Exporting observations…');
+  const all=[];
+  for(let from=0;from<100000;from+=500){
+   const {data,error}=await sb.from('scouting_notes').select('*').eq('org_id',org.id).order('created_at',{ascending:false}).range(from,from+499);
+   if(error)throw error;all.push(...data);if(data.length<500)break;
+  }
+  const gameMap=new Map(games.map(g=>[g.id,g]));
+  const playerMap=new Map(players.map(p=>[p.id,p]));
+  const headers=['Date/time','Game date','Matchup','Event','Team','Jersey','Player','Period','Clock','Scout user ID','Tags','Observation','Reversed'];
+  const lines=[headers.map(csvField).join(',')];
+  for(const n of all){
+   const g=gameMap.get(n.game_id),p=playerMap.get(n.player_id);
+   lines.push([n.created_at,g?.game_date||'',g?g.home_team+' vs '+g.away_team:'',g?.event_name||'',n.team_name,n.jersey,p?.name||'',n.period,n.clock_text,n.author_id,(n.tags||[]).join(' | '),n.content,n.voided_at?'Yes':'No'].map(csvField).join(','));
+  }
+  const name=org.name.replace(/[^a-z0-9]+/gi,'-').slice(0,35);
+  download(name+'-scouting-timeline-'+new Date().toISOString().slice(0,10)+'.csv','\ufeff'+lines.join('\r\n'),'text/csv;charset=utf-8');
+  notify('Exported '+all.length+' scouting observations');
+ }catch(e){notify('CSV export failed: '+e.message,true)}
+}
+function report(){
+ const p=current();if(!p)return;
+ const g=activeGame(),evalThis=getEval(),statThis=getStat();
+ const safe=Object.fromEntries(Object.entries(statThis?.counters||{}).map(([k,v])=>[k,Number(v)||0]));
+ const pct=(made,attempted)=>attempted?((100*made/attempted).toFixed(1)+'%'):'N/A';
+ const thisGameNotes=notes.filter(n=>n.player_id===p.id&&n.game_id===game);
+ const history=notes.filter(n=>n.player_id===p.id);
+ const text=[
+  'SCOUTBOARD · SCOUTING REPORT (PRIVATE WORKSPACE)',
+  'Organization: '+org.name,
+  'Generated: '+new Date().toLocaleString(),
+  'Player: '+p.name+' #'+(p.jersey||'—'),
+  'Team: '+teamName(p)+' | Position: '+(p.position||'TBD')+' | Class: '+(p.class_year||'TBD'),
+  'Height: '+(p.height||'TBD')+' | Hometown: '+(p.hometown||'TBD'),
+  'Game: '+(g?g.home_team+' vs '+g.away_team+' on '+g.game_date:'No game selected'),
+  '',
+  'SCOUT-TRACKED PERFORMANCE (THIS SCOUT, THIS GAME; NOT OFFICIAL BOX SCORE)',
+  'Points '+(safe.PTS||0)+' | Rebounds '+(safe.REB||0)+' | Assists '+(safe.AST||0)+' | Steals '+(safe.STL||0)+' | Blocks '+(safe.BLK||0)+' | Turnovers '+(safe.TOV||0),
+  'FG '+(safe.FGM||0)+'/'+(safe.FGA||0)+' ('+pct(safe.FGM,safe.FGA)+') | 3PT '+(safe['3PM']||0)+'/'+(safe['3PA']||0)+' ('+pct(safe['3PM'],safe['3PA'])+') | FT '+(safe.FTM||0)+'/'+(safe.FTA||0)+' ('+pct(safe.FTM,safe.FTA)+')',
+  '',
+  'YOUR EVALUATION',
+  'Projection: '+(evalThis?.projection||'Not assessed')+' | Confidence: '+(evalThis?.confidence||'Not assessed'),
+  'Strengths: '+(evalThis?.strengths||'Not assessed'),
+  'Development areas: '+(evalThis?.development||'Not assessed'),
+  'Overall: '+(evalThis?.overall||'Not assessed'),
+  'Grades (1–10, relative to competition): '+JSON.stringify(evalThis?.grades||{}),
+  '',
+  'THIS GAME · OBSERVATIONS ('+thisGameNotes.length+')',
+  ...thisGameNotes.map(n=>new Date(n.created_at).toLocaleString()+' · '+(n.period||'')+' '+(n.clock_text||'')+' · '+(n.voided_at?'[REVERSED] ':'')+n.content),
+  '',
+  'OTHER GAMES · OBSERVATIONS ('+(history.length-thisGameNotes.length)+')',
+  ...history.filter(n=>n.game_id!==game).map(n=>new Date(n.created_at).toLocaleString()+' · Game '+(games.find(g=>g.id===n.game_id)?.event_name||n.game_id)+' · '+(n.voided_at?'[REVERSED] ':'')+n.content),
+  '',
+  'Evidence is an observational sample. Validate against official video and box scores before external publication.'
+ ].join('\n');
+ download('ScoutReport-'+p.name.replace(/[^a-z0-9]+/gi,'-')+'.txt',text,'text/plain');
+ notify('Private player report exported');
+}
+
 async function start(){try{const {data:{session}}=await sb.auth.getSession();user=session?.user;if(!user){$('authScreen').classList.remove('hidden');$('desk').classList.add('hidden');$('loading').classList.add('hidden');return}$('authScreen').classList.add('hidden');const rawPending=localStorage.getItem('scoutboard:invite');let pending='';try{const obj=JSON.parse(rawPending);if(obj?.expires>Date.now())pending=obj.code;else localStorage.removeItem('scoutboard:invite')}catch{}if(pending){const {data,error}=await sb.rpc('scout_redeem_invite',{invite_code:pending});if(!error){localStorage.removeItem('scoutboard:invite');history.replaceState({},'',location.pathname);await loadWorkspace(data);return}else{notify('Invite link could not be redeemed: '+error.message,true)}}await loadWorkspace()}catch(e){$('loading').textContent='Connection issue: '+e.message;notify(e.message,true)}}
 $('loginBtn').onclick=async()=>{const email=$('email').value.trim();if(!email)return;const r=await sb.auth.signInWithOtp({email,options:{emailRedirectTo:location.origin+location.pathname}});$('authMessage').textContent=r.error?r.error.message:'Email sent. Open the sign-in link in your inbox.'};
 
@@ -378,7 +495,7 @@ document.addEventListener('click',async e=>{
 });
 
 $('deskMode').onchange=e=>{const quick=e.target.value==='quick';$('desk').classList.toggle('quick',quick);localStorage.setItem('scoutboard:desk-mode',quick?'quick':'full')};$('deskMode').value=localStorage.getItem('scoutboard:desk-mode')||'full';$('desk').classList.toggle('quick',$('deskMode').value==='quick');
-$('exportBtn').onclick=backup;$('reportBtn').onclick=report;$('closeModal').onclick=closeModal;
+$('toolsBtn').onclick=openScoutTools;$('exportBtn').onclick=backup;$('reportBtn').onclick=report;$('closeModal').onclick=closeModal;
 $('addPlayerBtn').onclick=()=>chooseModal('player');$('newTeamBtn').onclick=()=>chooseModal('team');$('newGameBtn').onclick=()=>chooseModal('game');$('editGameBtn').onclick=()=>chooseModal('editGame');$('editTeamBtn').onclick=()=>chooseModal('editTeam');$('editPlayerBtn').onclick=()=>{if(current())chooseModal('edit')};
 $('homeSideBtn').onclick=()=>chooseSide('home');$('awaySideBtn').onclick=()=>chooseSide('away');$('sideRoster').onclick=e=>{const b=e.target.closest('[data-side-player]');if(b)choosePlayer(b.dataset.sidePlayer)};$('matchTeamsBtn').onclick=openRosterLink;
 $('prevPlayerBtn').onclick=()=>step(-1);$('nextPlayerBtn').onclick=()=>step(1);
