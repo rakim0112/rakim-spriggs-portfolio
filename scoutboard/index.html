@@ -72,14 +72,22 @@ async function refresh(){
  const noteDraft=$('noteText').value;
  const fieldDraft={};['projection','confidence','strengths','development','overall'].forEach(k=>fieldDraft[k]=$(k).value);
  const gradesDraft=Array.from(document.querySelectorAll('.gradeInput')).map(x=>[x.dataset.grade,x.value]);
- const qs=[
-  ['teams',sb.from('teams').select('*').eq('org_id',originOrg).order('name')],
-  ['games',sb.from('games').select('*').eq('org_id',originOrg).order('game_date',{ascending:false})],
-  ['players',sb.from('players').select('*').eq('org_id',originOrg).order('jersey')],
-  ['game_stats',sb.from('game_stats').select('*').eq('org_id',originOrg)],
-  ['evaluations',sb.from('evaluations').select('*').eq('org_id',originOrg)]
- ];
- const responses=await Promise.all(qs.map(async ([name,q])=>({name,...await q})));
+ const names=['teams','games','players','game_stats','evaluations'];
+ const responses=await Promise.all(names.map(async name=>{
+  const rows=[];
+  for(let from=0;from<25000;from+=500){
+   let q=sb.from(name).select('*').eq('org_id',originOrg);
+   if(name==='teams')q=q.order('name');
+   else if(name==='games')q=q.order('game_date',{ascending:false});
+   else if(name==='players')q=q.order('jersey');
+   else q=q.order('id');
+   const r=await q.range(from,from+499);
+   if(r.error)throw Error(name+': '+r.error.message);
+   rows.push(...r.data);
+   if(r.data.length<500)break;
+  }
+  return {name,data:rows,error:null};
+ }));
  if(org.id!==originOrg)return;
  const data=Object.fromEntries(responses.map(r=>{if(r.error)throw Error(r.name+': '+r.error.message);return [r.name,r.data]}));
  teams=data.teams;games=data.games;players=data.players;stats=data.game_stats;evals=data.evaluations;
@@ -195,6 +203,23 @@ function confirmLeave(){stashDraft();return true}
 function choosePlayer(id){if(id===selected)return;stashDraft();selected=id;const tm=sideTeamId(activeSide);const op=sideTeamId(activeSide==='home'?'away':'home');if(op&&players.find(p=>p.id===id)?.team_id===op)activeSide=activeSide==='home'?'away':'home';tags=[];$('noteText').value='';render();rememberDesk()}
 function step(n){const roster=rosterForSide(activeSide);const fallback=players;const visible=roster.length?roster:fallback;if(!visible.length)return;const i=visible.findIndex(p=>p.id===selected);choosePlayer(visible[(i+n+visible.length)%visible.length].id)}
 async function saveNote(content,tg=[]){if(!requireContext())return;const p=current();try{const row={org_id:org.id,player_id:selected,game_id:game,team_name:teamName(p),jersey:p.jersey,content,tags:tg,author_id:user.id,period,clock_text:$('gameClock').value};await request('notes',sb.from('scouting_notes').insert(row).select().single());$('noteText').value='';tags=[];stashDraft();try{await refresh();notify('Observation saved')}catch(refreshError){notify('Observation saved; reload to see it.',true)}}catch(e){notify('Save unconfirmed. Check timeline before retrying: '+e.message,true)}}
+
+async function syncSavedEvent(noteId,playerId,gameId,workspaceId){
+ if(!org||org.id!==workspaceId)return;
+ const [n,s]=await Promise.all([
+  sb.from('scouting_notes').select('*').eq('id',noteId).eq('org_id',workspaceId).single(),
+  sb.from('game_stats').select('*').eq('org_id',workspaceId).eq('player_id',playerId).eq('game_id',gameId).eq('scout_id',user.id).single()
+ ]);
+ if(n.error)throw n.error;if(s.error)throw s.error;
+ if(org.id!==workspaceId)return;
+ const nIndex=notes.findIndex(x=>x.id===n.data.id);
+ if(nIndex>=0)notes[nIndex]=n.data;else notes.unshift(n.data);
+ const sIndex=stats.findIndex(x=>x.id===s.data.id);
+ if(sIndex>=0)stats[sIndex]=s.data;else stats.push(s.data);
+ if(game===gameId&&selected===playerId){
+  stashDraft();render();
+ }
+}
 async function eventHit(name){
  if(!requireContext()||savingEvent)return;
  const playedFor=selected,gameFor=game,lobbyFor=org.id;
@@ -211,11 +236,11 @@ async function eventHit(name){
  savingEvent=true;document.querySelectorAll('#quickPad button').forEach(b=>b.disabled=true);
  $('syncState').textContent='Saving '+name+'…';
  try{
-  const {error}=await sb.rpc('scout_log_event_v2',payload);
+  const {data:noteId,error}=await sb.rpc('scout_log_event_v2',payload);
   if(error)throw error;
   localStorage.removeItem(pendingKey);
   notify('Saved '+name+' to cloud');
-  try{await refresh()}catch(err){notify('Play saved; unable to refresh. Reopen game.',true)}
+  try{await syncSavedEvent(noteId,playedFor,gameFor,lobbyFor)}catch(err){notify('Play saved; use ↻ Sync to refresh the display.',true)}
  }catch(e){
   // Keep the identical request ID, so retry cannot count the same shot twice.
   $('syncState').textContent='Unconfirmed';
