@@ -100,3 +100,7 @@ Email: rakimspriggs@gmail.com
 ---
 
 This portfolio is actively maintained as I complete the final portion of my Computer Science degree. Additional projects from my remaining coursework will be added as they are completed and polished for public presentation.
+
+## Live Portfolio
+
+View the published portfolio: https://rakim0112.github.io/rakim-spriggs-portfolio/
