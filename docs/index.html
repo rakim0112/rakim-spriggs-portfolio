@@ -27,7 +27,7 @@
     body {
       margin: 0;
       background:
-        radial-gradient(600px circle at var(--pointer-x) var(--pointer-y), rgba(240, 75, 85, .13), transparent 68%),
+        radial-gradient(760px circle at var(--pointer-x) var(--pointer-y), rgba(240, 75, 85, .28), transparent 70%),
         radial-gradient(ellipse at top right, #22202a 0, var(--bg) 42rem);
       color: var(--text);
       position: relative;
@@ -223,10 +223,8 @@
       const year = document.getElementById("year");
       if (year) year.textContent = new Date().getFullYear();
 
-      const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      const finePointer = window.matchMedia("(pointer: fine)").matches;
-      if (reducedMotion || !finePointer) return;
-
+      // Pointer lighting follows the cursor without a continuous animation.
+      // Keep it available across pointer and reduced-motion configurations.
       let frameRequested = false;
       let pointerX = 78;
       let pointerY = 12;
