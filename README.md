@@ -1,7 +1,7 @@
 # Rakim Spriggs — Software Development Portfolio
 
 **B.S. Computer Science | Full-Stack Development | Cloud & Application Development**  
-Southern New Hampshire University — **Expected December 2026**
+Southern New Hampshire University — **Expected November 2026**
 
 I build web applications, APIs, database-backed tools, cloud-based applications, and interactive software. My current work combines full-stack development with AWS, Docker, MongoDB, Python, JavaScript/TypeScript, Java, and C++.
 
@@ -85,7 +85,7 @@ My background also includes photography and music production. Those experiences 
 
 **Southern New Hampshire University**  
 Bachelor of Science in Computer Science  
-Expected December 2026
+Expected November 2026
 
 ## Links
 
