@@ -19,13 +19,19 @@
       --accent: #f04b55;
       --line: #2b3342;
       --max: 1080px;
+      --pointer-x: 78%;
+      --pointer-y: 12%;
     }
     * { box-sizing: border-box; }
     html { scroll-behavior: smooth; }
     body {
       margin: 0;
-      background: radial-gradient(ellipse at top right, #22202a 0, var(--bg) 42rem);
+      background:
+        radial-gradient(600px circle at var(--pointer-x) var(--pointer-y), rgba(240, 75, 85, .13), transparent 68%),
+        radial-gradient(ellipse at top right, #22202a 0, var(--bg) 42rem);
       color: var(--text);
+      position: relative;
+      isolation: isolate;
       font-family: "Instrument Sans", Arial, Helvetica, sans-serif;
       line-height: 1.65;
     }
@@ -65,6 +71,22 @@
     .card {
       border: 1px solid var(--line); background: linear-gradient(150deg, var(--panel-2), var(--panel));
       border-radius: 12px; padding: 1.3rem; min-width: 0;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, .12);
+      transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+    }
+    .card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(240, 75, 85, .55);
+      box-shadow: 0 14px 32px rgba(0, 0, 0, .28), 0 0 24px rgba(240, 75, 85, .08);
+    }
+    a:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 4px;
+      border-radius: 4px;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; }
     }
     .tag { display: inline-block; color: #ffc2c5; background: #3a2028; border-radius: 4px; padding: .2rem .45rem; font-size: .75rem; font-weight: 700; margin-bottom: .65rem; }
     h3 { margin: .1rem 0 .45rem; font-size: 1.2rem; }
@@ -195,5 +217,32 @@
   <footer>
     <div class="wrap">© <span id="year">2026</span> Rakim Spriggs · Computer Science ePortfolio · <a href="https://github.com/rakim0112">GitHub</a></div>
   </footer>
+  <script>
+    (() => {
+      const root = document.documentElement;
+      const year = document.getElementById("year");
+      if (year) year.textContent = new Date().getFullYear();
+
+      const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const finePointer = window.matchMedia("(pointer: fine)").matches;
+      if (reducedMotion || !finePointer) return;
+
+      let frameRequested = false;
+      let pointerX = 78;
+      let pointerY = 12;
+
+      window.addEventListener("pointermove", (event) => {
+        pointerX = (event.clientX / window.innerWidth) * 100;
+        pointerY = ((event.clientY + window.scrollY) / Math.max(document.documentElement.scrollHeight, window.innerHeight)) * 100;
+        if (frameRequested) return;
+        frameRequested = true;
+        window.requestAnimationFrame(() => {
+          root.style.setProperty("--pointer-x", pointerX + "%");
+          root.style.setProperty("--pointer-y", pointerY + "%");
+          frameRequested = false;
+        });
+      }, { passive: true });
+    })();
+  </script>
 </body>
 </html>
